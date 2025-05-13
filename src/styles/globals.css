@@ -4,6 +4,7 @@
   body {
     font-family: 'Pretendard', sans-serif;
     color: var(--color-gray100);
+    background-color: var(--color-bg300);
   }
   button {
     cursor: pointer;
@@ -31,6 +32,7 @@
   --color-bg200: #1e293b;
   --color-bg300: #0f172a;
   --color-bg400: #020617;
+  --color-bg500: #18212f;
   --color-primary-hover: #059669;
   --color-primary-pressed: #047857;
   --color-border: rgba(248, 250, 252, 0.1);
@@ -39,7 +41,7 @@
   --color-gray300: #cbd5e1;
   --color-gray400: #94a3b8;
   --color-gray500: #64748b;
-  --color-danger: #dc2626;
+  --color-danger: #ef4444;
 }
 
 @layer utilities {
@@ -49,6 +51,12 @@
   }
 
   /* font */
+  .text-4xl-bold {
+    font-size: 40px;
+    line-height: 48px;
+    font-weight: 700;
+  }
+
   .text-4xl-medium {
     font-size: 40px;
     line-height: 48px;

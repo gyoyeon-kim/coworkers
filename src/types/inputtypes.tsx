@@ -1,19 +1,26 @@
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+
+export interface TextInputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+
+export interface TextAreaInputProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  height?: string;
+}
+
 export type ToggleInputProps = {
   options: string[];
   onSelect?: (selectedOption: string) => void;
 };
 
-export interface CurrentEmailProp {
+export type CurrentNameProp = {
+  name: string;
+};
+
+export type CurrentEmailProp = {
   email: string;
-}
+};
 
-export interface TextInputProps {
-  placeholder?: string;
-}
-
-export type TextAreaInputProps = {
-  placeholder?: string;
-  height?: string;
+export type CurrentPasswordProp = {
+  onClick?: () => void;
 };
 
 export type ReplyItemProps = {

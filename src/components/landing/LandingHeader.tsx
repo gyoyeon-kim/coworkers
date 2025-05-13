@@ -3,12 +3,30 @@
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Repair from '@/assets/icons/Repair';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { useAuthStore } from '@/stores/useAuthStore';
 
 interface LandingHeaderProps {
   topImageSrc: string;
 }
 
 export default function LandingHeader({ topImageSrc }: LandingHeaderProps) {
+  const router = useRouter();
+  const { isLoggedIn, initializeAuth } = useAuthStore();
+
+  useEffect(() => {
+    initializeAuth();
+  }, []);
+
+  const handleStartClick = () => {
+    if (isLoggedIn) {
+      router.push('/team');
+    } else {
+      router.push('/login');
+    }
+  };
+
   return (
     <div className="relative flex h-[640px] w-full flex-col items-center overflow-hidden md:h-[940px] lg:h-[1080px]">
       <div className="absolute inset-0 h-full w-full">
@@ -41,7 +59,10 @@ export default function LandingHeader({ topImageSrc }: LandingHeaderProps) {
         </span>
       </motion.div>
 
-      <button className="bg-gradient-primary text-text-inverse absolute bottom-[48px] h-[45px] w-[343px] rounded-[32px] text-lg font-bold md:bottom-[119px] md:w-[373px] lg:bottom-[120px] lg:w-[373px]">
+      <button
+        onClick={handleStartClick}
+        className="bg-gradient-primary text-text-inverse absolute bottom-[48px] h-[45px] w-[343px] rounded-[32px] text-lg font-bold md:bottom-[119px] md:w-[373px] lg:bottom-[120px] lg:w-[373px]"
+      >
         지금 시작하기
       </button>
     </div>

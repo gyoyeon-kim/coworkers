@@ -1,14 +1,19 @@
-import { useState } from "react";
+import { useState, ChangeEvent } from 'react';
 
-export default function useValidatedInput(
-  validator: (value: string) => boolean
-) {
-  const [value, setValue] = useState("");
+export default function useValidatedInput(validator: (value: string) => boolean): {
+  value: string;
+  setValue: (value: string) => void;
+  touched: boolean;
+  isInvalid: boolean;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  onBlur: () => void;
+} {
+  const [value, setValue] = useState('');
   const [touched, setTouched] = useState(false);
 
-  const isInvalid = touched && value.length > 0 && !validator(value);
+  const isInvalid = touched && (!validator(value) || value.length === 0);
 
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     setValue(e.target.value);
   };
 
@@ -16,5 +21,12 @@ export default function useValidatedInput(
     setTouched(true);
   };
 
-  return { value, setValue, touched, isInvalid, onChange, onBlur };
+  return {
+    value,
+    setValue,
+    touched,
+    isInvalid,
+    onChange,
+    onBlur,
+  };
 }

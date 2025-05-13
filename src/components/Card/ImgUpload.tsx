@@ -11,11 +11,14 @@ export default function ImgUpload() {
   /* 이미지 삭제 */
   const handleDeleteImage = () => {
     setImage(null);
+    if (fileInput.current) {
+      fileInput.current.value = '';
+    }
   };
 
   return (
     <div
-      className="bg-bg200 relative flex aspect-square max-h-[282px] w-full max-w-[282px] cursor-pointer items-center justify-center overflow-hidden rounded-xl"
+      className="bg-bg200 relative flex aspect-square max-h-[282px] w-full max-w-[282px] cursor-pointer items-center justify-center overflow-hidden rounded-xl border border-[#F8FAFC1A]"
       onClick={() => fileInput.current?.click()}
     >
       {image ? (
@@ -24,7 +27,7 @@ export default function ImgUpload() {
           <IconDelete
             width={40}
             height={40}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform cursor-pointer text-white"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transform cursor-pointer"
             onClick={(e) => {
               e.stopPropagation(); // 상위 이벤트 전파 막기
               handleDeleteImage();
@@ -46,6 +49,8 @@ export default function ImgUpload() {
         onChange={(e) => {
           const file = e.target.files?.[0];
           if (!file) return;
+
+          console.log('file', file);
 
           // 10MB 초과 검사
           if (file.size > 10 * 1024 * 1024) {
