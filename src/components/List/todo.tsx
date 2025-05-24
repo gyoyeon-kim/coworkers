@@ -48,8 +48,6 @@ export default function TodoItem({
 
   const { triggerReload } = useTaskReload();
 
-  const queryClient = useQueryClient();
-
   const toggleDropdown = () => {
     setIsDropDownOpen((prev) => !prev);
   };
@@ -61,15 +59,15 @@ export default function TodoItem({
   /* 할 일 수정 */
   const handleEdit: () => void = () => {
     console.log('수정 눌렀따');
-    setIsDropDownOpen(false);
     setEditModalOpen(true);
-    //refetchTask();
+    setIsDropDownOpen(false);
   };
 
   const [taskData, setTaskData] = useState<any>(null);
 
   const { reloadKey } = useTaskReload();
 
+  /* 할일 상세 */
   useEffect(() => {
     const fetchData = async () => {
       if (!groupId || !tasklistid || !taskid) return;
@@ -110,7 +108,10 @@ export default function TodoItem({
   });
 
   const handleDelete = () => {
-    deleteMutation.mutate();
+    console.log('tasklistid', tasklistid);
+    console.log('taskid', taskid);
+
+    //deleteMutation.mutate();
   };
 
   return (
@@ -212,23 +213,32 @@ export default function TodoItem({
             })}
           />
           {taskData?.data.recurring.frequencyType && (
-            <span>{frequencyLabelMap[taskData.data.recurring.frequencyType]} 반복</span>
+            <span>{frequencyLabelMap[taskData.data.recurring.frequencyType]} 반복 </span>
           )}
         </div>
-      </div>
+        {isEditModalOpen && (
+          <>
+            {console.log('startDate', taskData?.data?.recurring.createdAt.split('T')[0])}
+            {console.log(
+              'new Date',
+              taskData?.data?.recurring.createdAt.split('T')[1].split('+')[0]
+            )}
 
-      {tasklistid !== undefined && taskid !== undefined && isEditModalOpen && (
-        <TodoEditModal
-          isOpen={isEditModalOpen}
-          onCloseAction={() => setEditModalOpen(false)}
-          groupid={groupId!}
-          taskListid={tasklistid}
-          taskid={taskid}
-          onSubmit={() => {
-            setEditModalOpen(false);
-          }}
-        />
-      )}
+            <TodoEditModal
+              isOpen={isEditModalOpen}
+              onCloseAction={() => setEditModalOpen(false)}
+              groupid={groupId!}
+              taskListid={tasklistid}
+              taskid={taskid!}
+              date={new Date(taskData?.data?.recurring.createdAt)}
+              time={new Date(taskData?.data?.recurring.createdAt)}
+              onSubmit={() => {
+                setEditModalOpen(false);
+              }}
+            />
+          </>
+        )}
+      </div>
     </div>
   );
 }

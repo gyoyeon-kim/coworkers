@@ -22,6 +22,8 @@ export interface TodoEditModalProps {
   taskListid?: number;
   taskid: number;
   isOpen: boolean;
+  date: Date;
+  time: Date;
   onCloseAction: () => void;
   onSubmit: (newTodo: {
     title: string;
@@ -39,6 +41,8 @@ export default function TodoEditModal({
   onCloseAction,
   taskid,
   taskListid,
+  date,
+  time,
   disabled = false,
   groupid,
 }: TodoEditModalProps) {
@@ -55,16 +59,33 @@ export default function TodoEditModal({
   };
 
   const { triggerReload } = useTaskReload();
+  const [taskData, setTaskData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const { reloadKey } = useTaskReload();
 
   /* 상세 조회 */
-  const { data: taskData } = useQuery({
-    queryKey: ['task', groupid, taskListid, taskid],
-    queryFn: () => {
-      if (!groupid || !taskListid || !taskid) throw new Error('필수값 없음');
-      return fetchTask(groupid, taskListid, taskid);
-    },
-    enabled: !!groupid && !!taskListid && !!taskid,
-  });
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!groupid || !taskListid || !taskid) return;
+
+      try {
+        setIsLoading(true);
+        const data = await fetchTask(groupid, taskListid, taskid);
+        setTaskData(data);
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Unknown error'));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [groupid, taskListid, taskid, reloadKey]);
+
+  const rawDate = taskData?.data?.recurring?.startDate;
+  const parsedDate = rawDate && !isNaN(new Date(rawDate).getTime()) ? new Date(rawDate) : null;
 
   useEffect(() => {
     if (taskData?.data?.name) {
@@ -131,16 +152,10 @@ export default function TodoEditModal({
           <h2 className="text-lg-medium">시작 날짜 및 시간</h2>
           <div className="flex gap-2">
             <div className="pointer-events-none flex-1">
-              <DatePickerCalendar
-                dateTime={new Date(taskData?.data?.recurring?.startDate ?? '')}
-                setDate={() => {}}
-              />
+              <DatePickerCalendar dateTime={time} setDate={() => {}} />
             </div>
             <div className="pointer-events-none flex-1">
-              <DatePickerTime
-                dateTime={new Date(taskData?.data?.recurring?.startDate ?? '')}
-                setTime={() => {}}
-              />
+              <DatePickerTime dateTime={date} setTime={() => {}} />
             </div>
           </div>
         </div>
