@@ -22,8 +22,6 @@ export const deleteRecurringTask = (
   );
 };
 
-/* 상세 카드 - 할일 수정 */
-
 /* 상세 카드 - 댓글 내용 */
 export const fetchComment = (taskid: number) => {
   return axiosInstance.get(`/tasks/${taskid}/comments?limit=30`);

@@ -12,12 +12,13 @@ import { useMutation } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 import { fetchTask, deleteTask, deleteRecurringTask } from '@/api/detailPost';
 import { useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 
 const frequencyLabelMap: Record<string, string> = {
   ONCE: '한 번',
   DAILY: '매일',
-  WEEKLY: '주 반복',
-  MONTHLY: '월 반복',
+  WEEKLY: '주',
+  MONTHLY: '월',
 };
 
 interface TodoItemProps {
@@ -62,19 +63,27 @@ export default function TodoItem({
     console.log('수정 눌렀따');
     setIsDropDownOpen(false);
     setEditModalOpen(true);
-    refetchTask();
+    //refetchTask();
   };
 
-  /* 할일 내용 */
-  const { data: taskData, refetch: refetchTask } = useQuery({
-    queryKey: ['task', groupId, tasklistid, taskid],
-    queryFn: () => {
-      if (!groupId || !tasklistid || !taskid) throw new Error('필수값 없음');
-      return fetchTask(groupId, tasklistid, taskid);
-    },
-    enabled: !!groupId && !!tasklistid && !!taskid,
-    staleTime: 0,
-  });
+  const [taskData, setTaskData] = useState<any>(null);
+
+  const { reloadKey } = useTaskReload();
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!groupId || !tasklistid || !taskid) return;
+
+      try {
+        const data = await fetchTask(groupId, tasklistid, taskid);
+        setTaskData(data);
+      } catch (error) {
+        console.error('할일 불러오기 실패:', error);
+      }
+    };
+
+    fetchData();
+  }, [groupId, tasklistid, taskid, reloadKey]);
 
   /* 할일 삭제 */
   const deleteMutation = useMutation({
@@ -217,11 +226,6 @@ export default function TodoItem({
           taskid={taskid}
           onSubmit={() => {
             setEditModalOpen(false);
-            if (groupId && tasklistid && taskid) {
-              queryClient.invalidateQueries({
-                queryKey: ['task', groupId, tasklistid, taskid],
-              });
-            }
           }}
         />
       )}

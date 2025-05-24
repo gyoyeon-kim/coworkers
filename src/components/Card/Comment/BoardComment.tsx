@@ -17,6 +17,7 @@ import { toast } from 'react-toastify';
 import { useQuery } from '@tanstack/react-query';
 import { deleteDetailComment } from '@/api/detailPost';
 import { editDetailComment } from '@/api/detailPost';
+import { useTaskReload } from '@/context/TaskReloadContext';
 
 export default function BoardComment({
   commentId,
@@ -35,6 +36,8 @@ export default function BoardComment({
   const [editedContent, setEditedContent] = useState(content);
 
   const queryClient = useQueryClient();
+
+  const { triggerReload } = useTaskReload();
 
   const toggleDropdown = () => {
     setIsDropDownOpen((prev) => !prev);
@@ -95,6 +98,7 @@ export default function BoardComment({
       console.log('상세 카드 댓글 삭제 성공');
       onChange?.();
       queryClient.invalidateQueries({ queryKey: ['comments', taskId] });
+      triggerReload();
     },
     onError: (err: AxiosError) => {
       console.error('상세 카드 댓글 삭제 실패:', err.response?.data);

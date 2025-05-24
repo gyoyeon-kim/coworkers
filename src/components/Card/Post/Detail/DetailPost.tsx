@@ -65,13 +65,7 @@ export default function DetailPost({
     },
     onSuccess: async () => {
       toast.success('댓글이 작성되었습니다');
-      console.log('Invalidate task 쿼리 실행');
-      console.log('groupId', groupId);
-      console.log('tasklistid', tasklistid);
-      console.log('taskid', taskid);
-      queryClient.invalidateQueries({ queryKey: ['comments', taskid] });
-      await refetchTask();
-      await queryClient.invalidateQueries({ queryKey: ['task', groupId, tasklistid, taskid] });
+      triggerReload();
     },
     onError: () => {
       toast.error('댓글 작성 실패');
@@ -88,7 +82,6 @@ export default function DetailPost({
       return;
     }
     mutation.mutate(content);
-    //triggerReload();
   };
 
   const toggleDropdown = () => {
@@ -199,7 +192,7 @@ export default function DetailPost({
         )}
         <div className="mt-2 flex items-center md:w-[747px]">
           <span className={clsx('text-xl-bold', isComplete && 'line-through')}>
-            {taskData?.data.name} 댓글{taskData?.data.commentCount}
+            {taskData?.data.name}
           </span>
           <Image
             className="ml-auto flex h-[24px] min-h-[21px] max-w-[699px] cursor-pointer"
