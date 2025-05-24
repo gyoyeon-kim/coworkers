@@ -63,9 +63,9 @@ export default function DetailPost({
       if (!taskid) throw new Error('taskid 없음');
       return createComment(taskid, { content });
     },
-    onSuccess: async () => {
+    onSuccess: () => {
       toast.success('댓글이 작성되었습니다');
-      triggerReload();
+      if (taskid) queryClient.invalidateQueries({ queryKey: ['comments', taskid] });
     },
     onError: () => {
       toast.error('댓글 작성 실패');
@@ -91,34 +91,19 @@ export default function DetailPost({
   const [isEditModalOpen, setEditModalOpen] = useState(false);
 
   /* 할 일 수정 */
-  const handleEdit: () => void = () => {
+  const handleEdit = async () => {
     setEditModalOpen(true);
   };
 
-  const [taskData, setTaskData] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-
-  const { reloadKey } = useTaskReload();
-
   /* 할일 내용 */
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!groupId || !tasklistid || !taskid) return;
-
-      try {
-        setIsLoading(true);
-        const data = await fetchTask(groupId, tasklistid, taskid);
-        setTaskData(data);
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error('Unknown error'));
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [groupId, tasklistid, taskid, reloadKey]);
+  const { data: taskData } = useQuery({
+    queryKey: ['task', groupId, tasklistid, taskid],
+    queryFn: () => {
+      if (!groupId || !tasklistid || !taskid) throw new Error('필수값 없음');
+      return fetchTask(groupId, tasklistid, taskid);
+    },
+    enabled: !!groupId && !!tasklistid && !!taskid,
+  });
 
   /* 할일 삭제 */
   const deleteMutation = useMutation({
@@ -284,8 +269,6 @@ export default function DetailPost({
           groupid={groupId!}
           taskListid={tasklistid}
           taskid={taskid!}
-          date={new Date(taskData?.data?.recurring.createdAt)}
-          time={new Date(taskData?.data?.recurring.createdAt)}
           onSubmit={() => {
             setEditModalOpen(false);
           }}

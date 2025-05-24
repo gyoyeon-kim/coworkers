@@ -5,25 +5,9 @@ import clsx from 'clsx';
 import { useState } from 'react';
 import PostDropdown from '../Card/Post/PostDropdown';
 import TodoEditModal from '@/app/(pages)/(main)/[teamid]/tasklist/components/TodoFullCreateModal/TodoEditModal';
-
-import { useTaskReload } from '@/context/TaskReloadContext';
-import { toast } from 'react-toastify';
-import { useMutation } from '@tanstack/react-query';
-import { useQuery } from '@tanstack/react-query';
-import { fetchTask, deleteTask, deleteRecurringTask } from '@/api/detailPost';
-import { useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
-
-const frequencyLabelMap: Record<string, string> = {
-  ONCE: '한 번',
-  DAILY: '매일',
-  WEEKLY: '주',
-  MONTHLY: '월',
-};
+import { usePathname } from 'next/navigation';
 
 interface TodoItemProps {
-  tasklistid?: number;
-  taskid?: number;
   id: number;
   title: string;
   date: string;
@@ -34,8 +18,6 @@ interface TodoItemProps {
 }
 
 export default function TodoItem({
-  tasklistid,
-  taskid,
   title,
   date,
   time,
@@ -44,75 +26,29 @@ export default function TodoItem({
   completed,
 }: TodoItemProps) {
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
+
   const [isEditModalOpen, setEditModalOpen] = useState(false);
 
-  const { triggerReload } = useTaskReload();
+  /* 할 일 수정 */
+  const handleEdit = async () => {
+    setEditModalOpen(true);
+  };
+
+  /* 할 일 수정 */
+
+  /* 할 일 삭제 */
+  const handleDelete = () => {
+    console.log('삭제');
+    setIsDropDownOpen(false);
+  };
 
   const toggleDropdown = () => {
     setIsDropDownOpen((prev) => !prev);
   };
 
   /* 그룹 아이디 */
-  const pathname = window.location.pathname;
+  const pathname = window.location.pathname; // 예: "/2581/tasklist"
   const groupId = Number(pathname.split('/')[1]);
-
-  /* 할 일 수정 */
-  const handleEdit: () => void = () => {
-    console.log('수정 눌렀따');
-    setEditModalOpen(true);
-    setIsDropDownOpen(false);
-  };
-
-  const [taskData, setTaskData] = useState<any>(null);
-
-  const { reloadKey } = useTaskReload();
-
-  /* 할일 상세 */
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!groupId || !tasklistid || !taskid) return;
-
-      try {
-        const data = await fetchTask(groupId, tasklistid, taskid);
-        setTaskData(data);
-      } catch (error) {
-        console.error('할일 불러오기 실패:', error);
-      }
-    };
-
-    fetchData();
-  }, [groupId, tasklistid, taskid, reloadKey]);
-
-  /* 할일 삭제 */
-  const deleteMutation = useMutation({
-    mutationFn: async () => {
-      if (!groupId || !tasklistid || !taskid) throw new Error('필수 값 없음');
-
-      if (taskData?.data.frequency === 'ONCE') {
-        // 단일 할일 삭제
-        return deleteTask(groupId, tasklistid, taskid);
-      }
-
-      const recurringId = taskData?.data.recurringId;
-      if (!recurringId) throw new Error('recurringId가 없습니다.');
-
-      // 반복 할일 전체 삭제
-      return deleteRecurringTask(groupId, tasklistid, taskid, recurringId);
-    },
-    onSuccess: () => {
-      triggerReload();
-    },
-    onError: () => {
-      toast.error('할일 삭제 실패');
-    },
-  });
-
-  const handleDelete = () => {
-    console.log('tasklistid', tasklistid);
-    console.log('taskid', taskid);
-
-    //deleteMutation.mutate();
-  };
 
   return (
     <div className="flex cursor-pointer flex-col space-y-2 rounded-lg bg-slate-800 p-3">
@@ -151,7 +87,7 @@ export default function TodoItem({
               height={16}
               className="text-gray-300"
             />
-            <span className="text-xs text-gray-300">{taskData?.data.commentCount}</span>
+            <span className="text-xs text-gray-300">{comments}</span>
           </button>
         </div>
 
@@ -196,11 +132,11 @@ export default function TodoItem({
             height={12}
             className="h-3 w-3"
           />
-          <span>{taskData?.data.recurring.createdAt.slice(0, 10)}</span>
+          <span>{date}</span>
         </div>
         <div className="flex items-center space-x-1">
           <Image src="/icons/icon_time.svg" alt="시간" width={12} height={12} className="h-3 w-3" />
-          <span>{taskData?.data.recurring.createdAt.slice(11, 16)}</span>
+          <span>{time}</span>
         </div>
         <div className="flex items-center space-x-1">
           <Image
@@ -212,33 +148,22 @@ export default function TodoItem({
               'opacity-30': !recurring,
             })}
           />
-          {taskData?.data.recurring.frequencyType && (
-            <span>{frequencyLabelMap[taskData.data.recurring.frequencyType]} 반복 </span>
-          )}
+          {recurring && <span>반복</span>}
         </div>
-        {isEditModalOpen && (
-          <>
-            {console.log('startDate', taskData?.data?.recurring.createdAt.split('T')[0])}
-            {console.log(
-              'new Date',
-              taskData?.data?.recurring.createdAt.split('T')[1].split('+')[0]
-            )}
-
-            <TodoEditModal
-              isOpen={isEditModalOpen}
-              onCloseAction={() => setEditModalOpen(false)}
-              groupid={groupId!}
-              taskListid={tasklistid}
-              taskid={taskid!}
-              date={new Date(taskData?.data?.recurring.createdAt)}
-              time={new Date(taskData?.data?.recurring.createdAt)}
-              onSubmit={() => {
-                setEditModalOpen(false);
-              }}
-            />
-          </>
-        )}
       </div>
+
+      {isEditModalOpen && (
+        <TodoEditModal
+          isOpen={isEditModalOpen}
+          onCloseAction={() => setEditModalOpen(false)}
+          groupid={groupId!}
+          taskListid={4047}
+          taskid={23511}
+          onSubmit={() => {
+            setEditModalOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }
